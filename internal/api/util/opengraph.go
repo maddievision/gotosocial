@@ -74,8 +74,8 @@ func OGBase(instance *apimodel.InstanceV1) *OGMeta {
 		SiteName:    instance.AccountDomain,
 		Description: ParseDescription(instance.ShortDescription),
 
-		Image:    instance.Thumbnail,
-		ImageAlt: instance.ThumbnailDescription,
+		Image:    "",
+		ImageAlt: "",
 	}
 
 	return og
