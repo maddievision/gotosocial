@@ -134,9 +134,6 @@ func (og *OGMeta) WithStatus(status *apimodel.WebStatus) *OGMeta {
 		if a.Description != nil {
 			og.ImageAlt = *a.Description
 		}
-	} else {
-		og.Image = status.Account.Avatar
-		og.ImageAlt = "Avatar for " + status.Account.Username
 	}
 
 	og.ArticlePublisher = status.Account.URL
