@@ -74,8 +74,8 @@ func OGBase(instance *apimodel.InstanceV1) *OGMeta {
 		SiteName:    instance.AccountDomain,
 		Description: ParseDescription(instance.ShortDescription),
 
-		Image:    instance.Thumbnail,
-		ImageAlt: instance.ThumbnailDescription,
+		Image:    "",
+		ImageAlt: "",
 	}
 
 	return og
@@ -134,9 +134,6 @@ func (og *OGMeta) WithStatus(status *apimodel.WebStatus) *OGMeta {
 		if a.Description != nil {
 			og.ImageAlt = *a.Description
 		}
-	} else {
-		og.Image = status.Account.Avatar
-		og.ImageAlt = "Avatar for " + status.Account.Username
 	}
 
 	og.ArticlePublisher = status.Account.URL
