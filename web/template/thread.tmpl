@@ -40,24 +40,6 @@
     {{- end -}}
 {{- end -}}
 
-{{- define "threadSummary" -}}
-    {{- if .context.ThreadHidden -}}
-        {{- if eq .context.ThreadShown 1 -}}
-            Single visible post
-        {{- else if gt .context.ThreadShown 1 -}}
-            Thread of {{ .context.ThreadShown }} visible posts
-        {{- end -}}
-            ; {{ .context.ThreadHidden }} more {{ if eq .context.ThreadHidden 1 }}post{{ else }}posts{{ end }} hidden or not public
-    {{- else -}}
-        {{- /* No hidden posts */ -}}
-        {{- if eq .context.ThreadLength 1 -}}
-            Single post
-        {{- else if gt .context.ThreadLength 1 -}}
-            Thread of {{ .context.ThreadLength }} posts
-        {{- end -}}
-    {{- end -}}
-{{- end -}}
-
 {{- define "repliesStart" -}}
 {{- with . }}
 </section>
