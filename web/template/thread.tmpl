@@ -40,24 +40,6 @@
     {{- end -}}
 {{- end -}}
 
-{{- define "threadSummary" -}}
-    {{- if .context.ThreadHidden -}}
-        {{- if eq .context.ThreadShown 1 -}}
-            Single visible post
-        {{- else if gt .context.ThreadShown 1 -}}
-            Thread of {{ .context.ThreadShown }} visible posts
-        {{- end -}}
-            ; {{ .context.ThreadHidden }} more {{ if eq .context.ThreadHidden 1 }}post{{ else }}posts{{ end }} hidden or not public
-    {{- else -}}
-        {{- /* No hidden posts */ -}}
-        {{- if eq .context.ThreadLength 1 -}}
-            Single post
-        {{- else if gt .context.ThreadLength 1 -}}
-            Thread of {{ .context.ThreadLength }} posts
-        {{- end -}}
-    {{- end -}}
-{{- end -}}
-
 {{- define "repliesStart" -}}
 {{- with . }}
 </section>
@@ -69,30 +51,211 @@
 {{- end }}
 {{- end -}}
 
+{{- define "defaultAvatarDimension2" -}}
+{{- /* 136 is the default width/height for 8.5rem avatars, double it to get a good look when expanded. */ -}}
+272
+{{- end -}}
+
+{{- define "avatarWidth2" -}}
+{{- with .Account }}
+    {{- if isNil .AvatarAttachment -}}
+        {{- template "defaultAvatarDimension2" . -}}
+    {{- else -}}
+        {{- /* Use the avatar's proper dimensions. */ -}}
+        {{- .AvatarAttachment.Meta.Original.Width -}}
+    {{- end -}}
+{{- end }}
+{{- end -}}
+
+{{- define "avatarHeight2" -}}
+{{- with .Account }}
+    {{- if isNil .AvatarAttachment -}}
+        {{- template "defaultAvatarDimension2" . -}}
+    {{- else -}}
+        {{- /* Use the avatar's proper dimensions. */ -}}
+        {{- .AvatarAttachment.Meta.Original.Height -}}
+    {{- end -}}
+{{- end }}
+{{- end -}}
+
+{{- define "avatarAlt2" -}}
 {{- with . }}
-<main class="thread-wrapper" data-nosnippet>
-    <section class="thread thread-main" aria-labelledby="thread-summary">
-        <div class="col-header">
-            <h2 id="thread-summary">{{- template "threadSummary" . -}}</h2>
-            {{- if .context.ThreadRepliesShown }}
-            <a href="#replies">jump to replies</a>
+    Avatar for {{ .Account.Username -}}
+    {{- if .Account.AvatarDescription }}
+        {{- /* Add the avatar's image description. */ -}}
+        : {{ .Account.AvatarDescription -}}
+    {{- end -}}
+{{- end }}
+{{- end -}}
+
+{{- define "headerAlt2" -}}
+{{- with . }}
+    Header for {{ .Account.Username -}}
+    {{- if .Account.HeaderDescription }}
+        {{- /* Add the header's image description. */ -}}
+        : {{ .Account.HeaderDescription -}}
+    {{- end -}}
+{{- end }}
+{{- end -}}
+
+{{- define "avatar2" -}}
+{{- with . }}
+<div
+    class="media photoswipe-gallery odd single avatar-image-wrapper"
+    role="group"
+>
+    <a
+        class="photoswipe-slide"
+        href="{{- .Account.Avatar -}}"
+        target="_blank"
+        data-pswp-width="{{- template "avatarWidth2" . -}}px"
+        data-pswp-height="{{- template "avatarHeight2" . -}}px"
+        data-cropped="true"
+        alt="{{- template "avatarAlt2" . -}}"
+        title="{{- template "avatarAlt2" . -}}"
+    >
+        <picture
+            aria-hidden="true"
+        >
+            {{- if .Account.AvatarAttachment }}
+            <source
+                class="avatar"
+                srcset="{{- .Account.AvatarStatic -}}"
+                type="{{- .Account.AvatarAttachment.PreviewMIMEType -}}"
+                media="(prefers-reduced-motion: reduce)"
+            />
+            {{- end }}
+            <img
+                class="avatar"
+                src="{{- .Account.Avatar -}}"
+                alt="{{- template "avatarAlt2" . -}}"
+                title="{{- template "avatarAlt2" . -}}"
+                width="{{- template "avatarWidth2" . -}}"
+                height="{{- template "avatarHeight2" . -}}"
+            />
+        </picture>
+    </a>
+</div>
+{{- end }}
+{{- end -}}
+
+{{- with . }}
+<main class="profile">
+    {{- with (index .context.Statuses 0) }}
+    <h2 class="sr-only">Profile for {{ .Account.Username -}}</h2>
+    {{- end }}
+    <section class="profile-header" role="region" aria-label="Basic info">
+        <div class="header-image-wrapper">
+            <picture>
+                {{- with (index .context.Statuses 0) }}
+                {{- if .Account.HeaderAttachment }}
+                <source
+                    srcset="{{- .Account.HeaderStatic -}}"
+                    type="{{- .Account.HeaderAttachment.PreviewMIMEType -}}"
+                    media="(prefers-reduced-motion: reduce)"
+                />
+                {{- end }}
+                <img
+                    src="{{- .Account.Header -}}"
+                    alt="{{- template "headerAlt2" . -}}"
+                    title="{{- template "headerAlt2" . -}}"
+                />
+                {{- end }}
+            </picture>
+        </div>
+        <div class="basic-info">
+            {{- with (index .context.Statuses 0) }}
+            {{- include "avatar2" . | indent 3 }}
+            <dl class="namerole">
+                <dt class="sr-only">Display name</dt>
+                <dd class="displayname text-cutoff">
+                    {{- if .Account.DisplayName -}}
+                    {{- emojify .Account.Emojis (escape .Account.DisplayName) -}}
+                    {{- else -}}
+                    {{- .Account.Username -}}
+                    {{- end -}}
+                </dd>
+                <div class="bot-username-wrapper">
+                    {{- if .Account.Bot }}
+                    <dt class="sr-only">Bot account</dt>
+                    <dd>
+                        <span class="sr-only">true</span>
+                        <div
+                            class="bot-legend-wrapper"
+                            aria-hidden="true"
+                            title="This is a bot account."
+                        >
+                            <i class="bot-icon fa fa-microchip"></i>
+                            <span class="bot-legend">bot</span>
+                        </div>
+                    </dd>
+                    {{- end }}                    
+                    <dt class="sr-only">Username</dt>
+                    <dd class="username text-cutoff">
+                        <a
+                            href="/@{{- .Account.Username -}}"
+                            rel="author"
+                            title="Open profile"
+                        >                    
+                            @{{- .Account.Username -}}@{{- $.instance.AccountDomain -}}
+                        </a>
+                    </dd>
+                </div>
+                {{- if .Account.Roles }}
+                <dt class="sr-only">Role</dt>
+                {{- range .Account.Roles }}
+                <dd class="role {{ .Name -}}">{{- .Name -}}</dd>
+                {{- end }}
+                {{- end }}
+            </dl>
             {{- end }}
         </div>
-
-        {{- range $status := .context.Statuses }}
-        <article
-            class="status{{- if $status.ThreadContextStatus }} expanded{{- end -}}{{- if $status.Indent }} indent-{{ $status.Indent }}{{- end -}}"
-            {{- includeAttr "status_attributes.tmpl" $status | indentAttr 3 }}
-        >
-            {{- include "status.tmpl" $status | indent 3 }}
-        </article>
-        {{- if and $status.ThreadLastMain $.context.ThreadReplies }}
-        {{- include "repliesStart" $ | indent 1 }}
-        {{- end }}
-        {{- end }}
-
-    {{- if .context.ThreadReplies }}
     </section>
-    {{- end }}
+    <div class="column-split">
+        <section class="about-user" role="region" aria-labelledby="about-header">
+            {{- with (index .context.Statuses 0) }}
+            <div class="col-header">
+                <h3 id="about-header">About<span class="sr-only">&nbsp;{{- .Account.Username -}}</span></h3>
+            </div>
+            {{- if .Account.Fields }}
+                <div class="fields">
+                    <h4 class="sr-only">Fields</h4>
+                    <dl>
+                        {{- range .Account.Fields }}
+                        <div class="field">
+                            <dt>{{- emojify $.Account.Emojis (noescape .Name) -}}</dt>
+                            <dd>{{- emojify $.Account.Emojis (noescape .Value) -}}</dd>
+                        </div>
+                        {{- end }}
+                    </dl>
+                </div>
+            {{- end }}
+            {{- if .Account.Note }}
+                <h4 class="sr-only">Bio</h4>
+                <div class="bio">
+                    {{ emojify .Account.Emojis (noescape .Account.Note) }}
+                </div>
+            {{- end }}
+            {{- end }}
+        </section>
+        <div class="statuses-wrapper" role="region">
+            <section class="thread thread-main" aria-labelledby="thread-summary">
+                {{- range $status := .context.Statuses }}
+                <article
+                    class="status{{- if $status.ThreadContextStatus }} expanded{{- end -}}{{- if $status.Indent }} indent-{{ $status.Indent }}{{- end -}}"
+                    {{- includeAttr "status_attributes.tmpl" $status | indentAttr 3 }}
+                >
+                    {{- include "status.tmpl" $status | indent 3 }}
+                </article>
+                {{- if and $status.ThreadLastMain $.context.ThreadReplies }}
+                {{- include "repliesStart" $ | indent 1 }}
+                {{- end }}
+                {{- end }}
+
+            {{- if .context.ThreadReplies }}
+            </section>
+            {{- end }}
+        </div>
+    </div>
 </main>
 {{- end }}

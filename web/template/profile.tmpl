@@ -171,7 +171,15 @@
                     </dd>
                     {{- end }}
                     <dt class="sr-only">Username</dt>
-                    <dd class="username text-cutoff">@{{- .account.Username -}}@{{- .instance.AccountDomain -}}</dd>
+                    <dd class="username text-cutoff">
+                        <a
+                            href="/@{{- .account.Username -}}"
+                            rel="author"
+                            title="Open profile"
+                        >                    
+                            @{{- .account.Username -}}@{{- .instance.AccountDomain -}}
+                        </a>
+                    </dd>
                 </div>
                 {{- if .account.Roles }}
                 <dt class="sr-only">Role</dt>
@@ -190,25 +198,12 @@
             {{- if .account.Fields }}
             {{- include "profile_fields.tmpl" . | indent 3 }}
             {{- end }}
-            <h4 class="sr-only">Bio</h4>
-            <div class="bio">
-                {{- if .account.Note }}
-                {{ emojify .account.Emojis (noescape .account.Note) }}
-                {{- else }}
-                <p>This GoToSocial user hasn't written a bio yet!</p>
-                {{- end }}
-            </div>
-            <h4 class="sr-only">Stats</h4>
-            <dl class="accountstats">
-                <dt>Joined</dt>
-                <dd><time datetime="{{- .account.CreatedAt -}}">{{- .account.CreatedAt | timestampVague -}}</time></dd>
-                <dt>Posts</dt>
-                <dd>{{- .account.StatusesCount -}}</dd>
-                <dt>Followed by</dt>
-                <dd>{{- if .account.HideCollections -}}<i>hidden</i>{{- else -}}{{- .account.FollowersCount -}}{{- end -}}</dd>
-                <dt>Following</dt>
-                <dd>{{- if .account.HideCollections -}}<i>hidden</i>{{- else -}}{{- .account.FollowingCount -}}{{- end -}}</dd>
-            </dl>
+            {{- if .account.Note }}
+                <h4 class="sr-only">Bio</h4>
+                <div class="bio">
+                    {{ emojify .account.Emojis (noescape .account.Note) }}
+                </div>
+            {{- end }}
         </section>
         <div class="statuses-wrapper" role="region" aria-label="Posts by {{ .account.Username -}}">
             {{- if .pinned_statuses }}

@@ -1,41 +1,10 @@
-{{- /*
-// GoToSocial
-// Copyright (C) GoToSocial Authors admin@gotosocial.org
-// SPDX-License-Identifier: AGPL-3.0-or-later
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/ -}}
-
-{{- define "shortDescription" -}}
-{{- if .instance.ShortDescription }}
-{{ .instance.ShortDescription | noescape }}
-{{- else }}
-<p>No short description has yet been set for this instance.</p>
-{{- end }}
-{{- end -}}
 
 {{- with . }}
 <main class="about">
     <section class="about-section" role="region" aria-labelledby="about">
-        <h3 id="about">About this instance</h3>
         <div class="about-section-contents">
-            {{- include "shortDescription" . | indent 3 }}
-            <a href="/about">See more details</a>
+            <p>🐝 What’s wrong honey bee? You look a little lost there.</p>
         </div>
     </section>
-    {{- include "index_what_is_this.tmpl" . | indent 1 }}
-    {{- include "index_register.tmpl" . | indent 1 }}
-    {{- include "index_apps.tmpl" . | indent 1 }}
 </main>
 {{- end }}

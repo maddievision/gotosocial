@@ -35,27 +35,6 @@
         </div>
         {{ end }}
         <div class="stats-grouping">
-            <div class="stats-item" title="Replies">
-                <dt>
-                    <span class="sr-only">Replies</span>
-                    <i class="fa fa-reply-all" aria-hidden="true"></i>
-                </dt>
-                <dd>{{- .RepliesCount -}}</dd>
-            </div>
-            <div class="stats-item" title="Faves">
-                <dt>
-                    <span class="sr-only">Favourites</span>
-                    <i class="fa fa-star" aria-hidden="true"></i>
-                </dt>
-                <dd>{{- .FavouritesCount -}}</dd>
-            </div>
-            <div class="stats-item" title="Boosts">
-                <dt>
-                    <span class="sr-only">Reblogs</span>
-                    <i class="fa fa-retweet" aria-hidden="true"></i>
-                </dt>
-                <dd>{{- .ReblogsCount -}}</dd>
-            </div>
             {{- if .Pinned }}
             <div class="stats-item" title="Pinned">
                 <dt>
