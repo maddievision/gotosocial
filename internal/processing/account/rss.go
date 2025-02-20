@@ -24,7 +24,6 @@ import (
 	"time"
 
 	"github.com/gorilla/feeds"
-	"github.com/superseriousbusiness/gotosocial/internal/config"
 	"github.com/superseriousbusiness/gotosocial/internal/db"
 	"github.com/superseriousbusiness/gotosocial/internal/gtserror"
 	"github.com/superseriousbusiness/gotosocial/internal/gtsmodel"
@@ -82,7 +81,13 @@ func (p *Processor) GetRSSFeedForUsername(ctx context.Context, username string) 
 
 	return func() (string, gtserror.WithCode) {
 		// Assemble author namestring once only.
-		author := "@" + account.Username + "@" + config.GetAccountDomain()
+		//author := "@" + account.Username + "@" + config.GetAccountDomain()
+		var author string
+		if account.DisplayName != "" {
+			author = account.DisplayName
+		} else {
+			author = account.Username
+		}
 
 		// Derive image/thumbnail for this account (may be nil).
 		image, errWithCode := p.rssImageForAccount(ctx, account, author)
@@ -91,8 +96,8 @@ func (p *Processor) GetRSSFeedForUsername(ctx context.Context, username string) 
 		}
 
 		feed := &feeds.Feed{
-			Title:       "Posts from " + author,
-			Description: "Posts from " + author,
+			Title:       author,
+			Description: author,
 			Link:        &feeds.Link{Href: account.URL},
 			Image:       image,
 		}

@@ -25,7 +25,6 @@ import (
 
 	"github.com/gorilla/feeds"
 	apimodel "github.com/superseriousbusiness/gotosocial/internal/api/model"
-	"github.com/superseriousbusiness/gotosocial/internal/config"
 	"github.com/superseriousbusiness/gotosocial/internal/gtsmodel"
 	"github.com/superseriousbusiness/gotosocial/internal/log"
 	"github.com/superseriousbusiness/gotosocial/internal/text"
@@ -42,11 +41,34 @@ func (c *Converter) StatusToRSSItem(ctx context.Context, s *gtsmodel.Status) (*f
 	// Title -- The title of the item.
 	// example: Venice Film Festival Tries to Quit Sinking
 	var title string
-	if s.ContentWarning != "" {
-		title = trimTo(s.ContentWarning, rssTitleMaxRunes)
-	} else {
-		title = trimTo(s.Text, rssTitleMaxRunes)
+
+	// search for markdown title in first line
+	statusText := s.Text
+
+	if statusText != "" {
+		// try to extract a markdown heading on the very first line
+		// and use it as the title
+		lines := strings.Split(statusText, "\n")
+		if len(lines) > 0 {
+			firstLine := lines[0]
+			if strings.HasPrefix(firstLine, "# ") {
+				title = text.SanitizeToPlaintext(firstLine[2:])
+
+				// remove the first line from the text
+				statusText = strings.Join(lines[1:], "\n")
+			}
+		}
 	}
+
+	if title == "" {
+		if s.ContentWarning != "" {
+			title = "CW: " + s.ContentWarning
+		} else {
+			title = statusText
+		}
+	}
+
+	title = trimTo(title, rssTitleMaxRunes)
 
 	// Link -- The URL of the item.
 	// example: http://nytimes.com/2004/12/07FEST.html
@@ -63,7 +85,11 @@ func (c *Converter) StatusToRSSItem(ctx context.Context, s *gtsmodel.Status) (*f
 		}
 		s.Account = a
 	}
-	authorName := "@" + s.Account.Username + "@" + config.GetAccountDomain()
+	authorName := s.Account.DisplayName
+	if authorName == "" {
+		authorName = s.Account.Username
+	}
+	// authorName := "@" + s.Account.Username + "@" + config.GetAccountDomain()
 	author := &feeds.Author{
 		Name: authorName,
 	}
@@ -76,25 +102,32 @@ func (c *Converter) StatusToRSSItem(ctx context.Context, s *gtsmodel.Status) (*f
 	// Description -- The item synopsis.
 	// example: Some of the most heated chatter at the Venice Film Festival this week was about the way that the arrival of the stars at the Palazzo del Cinema was being staged.
 	descriptionBuilder := strings.Builder{}
-	descriptionBuilder.WriteString(authorName + " ")
+	// descriptionBuilder.WriteString(authorName + " ")
 
-	attachmentCount := len(s.Attachments)
-	if len(s.AttachmentIDs) > attachmentCount {
-		attachmentCount = len(s.AttachmentIDs)
-	}
-	switch {
-	case attachmentCount > 1:
-		descriptionBuilder.WriteString(fmt.Sprintf("posted [%d] attachments", attachmentCount))
-	case attachmentCount == 1:
-		descriptionBuilder.WriteString("posted 1 attachment")
-	default:
-		descriptionBuilder.WriteString("made a new post")
-	}
+	// attachmentCount := len(s.Attachments)
+	// if len(s.AttachmentIDs) > attachmentCount {
+	// 	attachmentCount = len(s.AttachmentIDs)
+	// }
+	// switch {
+	// case attachmentCount > 1:
+	// 	descriptionBuilder.WriteString(fmt.Sprintf("posted [%d] attachments", attachmentCount))
+	// case attachmentCount == 1:
+	// 	descriptionBuilder.WriteString("posted 1 attachment")
+	// default:
+	// 	descriptionBuilder.WriteString("made a new post")
+	// }
 
-	if s.Text != "" {
-		descriptionBuilder.WriteString(": \"")
-		descriptionBuilder.WriteString(s.Text)
-		descriptionBuilder.WriteString("\"")
+	// if s.Text != "" {
+	// 	descriptionBuilder.WriteString(": \"")
+	// 	descriptionBuilder.WriteString(s.Text)
+	// 	descriptionBuilder.WriteString("\"")
+	// }
+
+	if s.ContentWarning != "" {
+		descriptionBuilder.WriteString("CW: ")
+		descriptionBuilder.WriteString(s.ContentWarning)
+	} else {
+		descriptionBuilder.WriteString(statusText)
 	}
 
 	description := trimTo(descriptionBuilder.String(), rssDescriptionMaxRunes)
@@ -151,7 +184,14 @@ func (c *Converter) StatusToRSSItem(ctx context.Context, s *gtsmodel.Status) (*f
 			apiEmojis = append(apiEmojis, apiEmoji)
 		}
 	}
-	content := text.EmojifyRSS(apiEmojis, s.Content)
+
+	var content string
+
+	if s.ContentWarning != "" {
+		content = text.EmojifyRSS(apiEmojis, s.ContentWarning)
+	} else {
+		content = text.EmojifyRSS(apiEmojis, s.Content)
+	}
 
 	return &feeds.Item{
 		Title:       title,
