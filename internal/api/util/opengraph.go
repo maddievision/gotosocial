@@ -67,7 +67,7 @@ func OGBase(instance *apimodel.InstanceV1) *OGMeta {
 	}
 
 	og := &OGMeta{
-		Title:       text.SanitizeToPlaintext(instance.Title) + " - GoToSocial",
+		Title:       text.SanitizeToPlaintext(instance.Title),
 		Type:        "website",
 		Locale:      locale,
 		URL:         instance.URI,
