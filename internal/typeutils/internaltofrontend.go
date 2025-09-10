@@ -49,7 +49,7 @@ const (
 	instancePollsMinExpiration               = 300     // seconds
 	instancePollsMaxExpiration               = 2629746 // seconds
 	instanceAccountsMaxFeaturedTags          = 10
-	instanceAccountsMaxProfileFields         = 6 // FIXME: https://github.com/superseriousbusiness/gotosocial/issues/1876
+	instanceAccountsMaxProfileFields         = 20 // FIXME: https://github.com/superseriousbusiness/gotosocial/issues/1876
 	instanceSourceURL                        = "https://github.com/superseriousbusiness/gotosocial"
 	instanceMastodonVersion                  = "3.5.3"
 )

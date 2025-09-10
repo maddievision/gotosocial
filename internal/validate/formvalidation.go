@@ -42,7 +42,7 @@ const (
 	maximumUsernameLength         = 64
 	maximumEmojiCategoryLength    = 64
 	maximumProfileFieldLength     = 255
-	maximumProfileFields          = 6
+	maximumProfileFields          = 20
 	maximumListTitleLength        = 200
 	maximumFilterKeywordLength    = 40
 	maximumFilterTitleLength      = 200
