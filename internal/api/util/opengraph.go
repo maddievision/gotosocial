@@ -66,12 +66,14 @@ func OGBase(instance *apimodel.InstanceV1) *OGMeta {
 		locale = instance.Languages[0]
 	}
 
+	instanceName := text.SanitizeToPlaintext(instance.Title)
+
 	og := &OGMeta{
-		Title:       text.SanitizeToPlaintext(instance.Title),
+		Title:       instanceName,
 		Type:        "website",
 		Locale:      locale,
 		URL:         instance.URI,
-		SiteName:    instance.AccountDomain,
+		SiteName:    instanceName,
 		Description: ParseDescription(instance.ShortDescription),
 
 		Image:    "",
@@ -85,7 +87,9 @@ func OGBase(instance *apimodel.InstanceV1) *OGMeta {
 // struct specific to that account. It's suitable for serving
 // at account profile pages.
 func (og *OGMeta) WithAccount(account *apimodel.WebAccount) *OGMeta {
-	og.Title = AccountTitle(account, og.SiteName)
+	attribution := AccountTitle(account, og.SiteName)
+	og.Title = attribution
+	og.SiteName = attribution
 	og.Type = "profile"
 	og.URL = account.URL
 	if account.Note != "" {
@@ -106,17 +110,37 @@ func (og *OGMeta) WithAccount(account *apimodel.WebAccount) *OGMeta {
 // struct specific to that status. It's suitable for serving
 // at status pages.
 func (og *OGMeta) WithStatus(status *apimodel.WebStatus) *OGMeta {
-	og.Title = "Post by " + AccountTitle(status.Account, og.SiteName)
+	attribution := AccountTitle(status.Account, og.SiteName)
+	og.Title = attribution
+	og.SiteName = attribution
 	og.Type = "article"
 	if status.Language != nil {
 		og.Locale = *status.Language
 	}
 	og.URL = status.URL
+
+	statusText := status.Text
+
+	if statusText != "" {
+		// try to extract a markdown heading on the very first line
+		// and use it as the title
+		lines := strings.Split(status.Text, "\n")
+		if len(lines) > 0 {
+			firstLine := lines[0]
+			if strings.HasPrefix(firstLine, "# ") {
+				og.Title = text.SanitizeToPlaintext(firstLine[2:])
+
+				// remove the first line from the text
+				statusText = strings.Join(lines[1:], "\n")
+			}
+		}
+	}
+
 	switch {
 	case status.SpoilerText != "":
 		og.Description = ParseDescription("CW: " + status.SpoilerText)
-	case status.Text != "":
-		og.Description = ParseDescription(status.Text)
+	case statusText != "":
+		og.Description = ParseDescription(statusText)
 	default:
 		og.Description = og.Title
 	}
@@ -145,14 +169,12 @@ func (og *OGMeta) WithStatus(status *apimodel.WebStatus) *OGMeta {
 }
 
 // AccountTitle parses a page title from account and accountDomain
-func AccountTitle(account *apimodel.WebAccount, accountDomain string) string {
-	user := "@" + account.Acct + "@" + accountDomain
-
+func AccountTitle(account *apimodel.WebAccount, siteName string) string {
 	if len(account.DisplayName) == 0 {
-		return user
+		return account.Acct + " on " + siteName
 	}
 
-	return account.DisplayName + ", " + user
+	return account.DisplayName + " on " + siteName
 }
 
 // ParseDescription returns a string description which is

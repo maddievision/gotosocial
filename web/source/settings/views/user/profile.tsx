@@ -79,7 +79,7 @@ function UserProfileForm({ data: profile }: UserProfileFormProps) {
 	const instanceConfig = React.useMemo(() => {
 		return {
 			allowCustomCSS: instance?.configuration?.accounts?.allow_custom_css === true,
-			maxPinnedFields: instance?.configuration?.accounts?.max_profile_fields ?? 6
+			maxPinnedFields: instance?.configuration?.accounts?.max_profile_fields ?? 20
 		};
 	}, [instance]);
 	

@@ -1038,7 +1038,6 @@ func (a *accountDB) GetAccountWebStatuses(
 		Column("status.id").
 		Where("? = ?", bun.Ident("status.account_id"), account.ID).
 		// Don't show replies or boosts.
-		Where("? IS NULL", bun.Ident("status.in_reply_to_uri")).
 		Where("? IS NULL", bun.Ident("status.boost_of_id"))
 
 	// Select statuses for this account according
